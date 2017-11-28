@@ -1,18 +1,43 @@
 <ion-header>
-  <ion-navbar>
+  <ion-navbar color='dark'>
     <button ion-button menuToggle>
       <ion-icon name="menu"></ion-icon>
     </button>
-    <ion-title>Home</ion-title>
+    <ion-title>我的图片</ion-title>
+    <ion-buttons end > 
+      <button icon-only ion-button (click)="add_img()" >
+        <ion-icon name='add'></ion-icon>
+      </button>
+    </ion-buttons>
+
   </ion-navbar>
 </ion-header>
 
 <ion-content padding>
-  <h3>Ionic Menu Starter</h3>
-
-  <p>
-    If you get lost, the <a href="http://ionicframework.com/docs/v2">docs</a> will show you the way.
-  </p>
-
-  <button ion-button secondary menuToggle>Toggle Menu</button>
+  <div>{{mytext}}</div>
+  <div class="pins">
+    <ion-card class="pin" *ngFor="let post of posts;index">
+      <img tappable (click)='change_image(post)' [src]="post.image" />
+      <div tappable *ngIf="post.description" class="post-description" (click)='changeDescription(post,index)'>
+        <small>{{ post.description }}</small>
+      </div>
+      <ion-item>
+        <ion-row>
+          <ion-col col-8>
+            <ion-avatar item-start>
+              <img src="./assets/imgs/3.jpg">
+            </ion-avatar>
+            <small>陶冶</small>
+            <p>
+              <small>Saicoding</small>
+            </p>
+        </ion-col>
+        <ion-col col-4 class='time' align-self-center>
+          <p>{{post.time | date:'yyyy-MM-dd'}}</p>
+          <p>{{post.time | date:'HH:mm'}}</p>
+        </ion-col>
+        </ion-row>
+      </ion-item>
+    </ion-card>
+  </div>
 </ion-content>
