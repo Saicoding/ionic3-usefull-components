@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { IonicPage, NavController, Platform, ActionSheetController, LoadingController, AlertController } from 'ionic-angular';
+import { Component, Input, ViewChildren, ElementRef, QueryList } from '@angular/core';
+import { IonicPage, NavController, Platform, ActionSheetController, LoadingController, AlertController, } from 'ionic-angular';
 
 import { Storage } from '@ionic/storage';
 import { CameraProvider } from '../../providers/util/camera.provider';
@@ -12,6 +12,11 @@ import { CameraProvider } from '../../providers/util/camera.provider';
 export class HomePage {
   mytext: string;
   posts = [];
+  isDelete: boolean = false;
+  delPost = [];
+
+  @ViewChildren('mycard')
+  mycards: QueryList<ElementRef>;
 
   constructor(
     public navCtrl: NavController,
@@ -29,7 +34,7 @@ export class HomePage {
     this.storage.get('myImgs').then((val) => {
       if (val) {
         this.posts = JSON.parse(val);
-      } else { 
+      } else {
         let imgs = [
           {
             description: 'Trying out digital painting',
@@ -37,7 +42,7 @@ export class HomePage {
             time: new Date()
           },
           {
-            description: '',
+            description: 'Delicious chocolate bread recipe!',
             image: './assets/imgs/c.jpg',
             time: new Date()
           },
@@ -52,12 +57,12 @@ export class HomePage {
             time: new Date()
           },
           {
-            description: '',
+            description: 'Delicious chocolate bread recipe!',
             image: './assets/imgs/f.jpg',
             time: new Date()
           },
           {
-            description: '',
+            description: 'Delicious chocolate bread recipe!',
             image: './assets/imgs/g.jpg',
             time: new Date()
           },
@@ -67,17 +72,17 @@ export class HomePage {
             time: new Date()
           },
           {
-            description: '',
+            description: 'Delicious chocolate bread recipe!',
             image: './assets/imgs/i.jpg',
             time: new Date()
           },
           {
-            description: '',
+            description: 'Delicious chocolate bread recipe!',
             image: './assets/imgs/j.jpg',
             time: new Date()
           },
           {
-            description: '',
+            description: 'Delicious chocolate bread recipe!',
             image: './assets/imgs/k.jpg',
             time: new Date()
           },
@@ -101,7 +106,7 @@ export class HomePage {
   }
 
   add_handler = (from) => {
-    const loading = this.loadingCtrl.create();  
+    const loading = this.loadingCtrl.create();
     loading.present();
     return from.then(picture => {
 
@@ -111,7 +116,7 @@ export class HomePage {
   }
 
   showAlert(pic) {
-    if(pic){
+    if (pic) {
 
       let alert = this.alertCtrl.create({
         title: '相片描述',
@@ -147,41 +152,44 @@ export class HomePage {
         ]
       });
       alert.present();
-    }else{
+    } else {
       return
     }
   }
 
-  changeDescription(post,index){
-    let alert = this.alertCtrl.create({ 
-      title:'修改描述',
-      message: "请填写照片描述",
-      inputs: [
-        {
-          name: 'title',
-          placeholder: post.description
-        },
-      ],
-      buttons: [
-        {
-          text: '取消',
-          handler: data => {
+  changeDescription(post, index) {
+    if (!this.isDelete) {
+      let alert = this.alertCtrl.create({
+        title: '修改描述',
+        message: "请填写照片描述",
+        inputs: [
+          {
+            name: 'title',
+            placeholder: post.description
+          },
+        ],
+        buttons: [
+          {
+            text: '取消',
+            handler: data => {
 
+            }
+          },
+          {
+            text: '保存',
+            handler: data => {
+              post.description = data.title;
+              let str = JSON.stringify(this.posts);
+              this.storage.set('myImgs', str);
+            }
           }
-        },
-        {
-          text: '保存',
-          handler: data => {
-            post.description=data.title;
-            let str = JSON.stringify(this.posts);
-            this.storage.set('myImgs', str);
-          }
-        }
-      ]
-    });
-    alert.present();
+        ]
+      });
+      alert.present();
+
+    }
   }
-  creat_actionsheet(handler , post?) {
+  creat_actionsheet(handler, post?) {
     const actionsheet = this.actionsheetCtrl.create({
       title: '选择图片',
       buttons: [
@@ -189,14 +197,14 @@ export class HomePage {
           text: '照相',
           icon: !this.platform.is('ios') ? 'camera' : null,
           handler: () => {
-           handler(this.camera.getPictureFromCamera(),post);
+            handler(this.camera.getPictureFromCamera(), post);
           }
         },
         {
           text: !this.platform.is('ios') ? '相片库' : 'camera roll',
           icon: !this.platform.is('ios') ? 'image' : null,
           handler: () => {
-            handler(this.camera.getPictureFromPhotoLibrary(),post);
+            handler(this.camera.getPictureFromPhotoLibrary(), post);
           }
         },
         {
@@ -212,11 +220,11 @@ export class HomePage {
     return actionsheet.present();
   }
 
-/**
- * 防止不识别this 所以采用箭头函数
- */
+  /**
+   * 防止不识别this 所以采用箭头函数
+   */
 
-  change_handler = (from,post) => {
+  change_handler = (from, post) => {
     const loading = this.loadingCtrl.create();
 
     loading.present();
@@ -229,7 +237,56 @@ export class HomePage {
     });
   }
 
-  change_image(post){
-    this.creat_actionsheet(this.change_handler, post);
+  change_image(post) {
+    if (!this.isDelete) {
+      this.creat_actionsheet(this.change_handler, post);
+    }
+
+  }
+
+  del_img() {
+    this.isDelete = true;
+    for (let i = 0; i < this.delPost.length; i++){
+      this.removeByValue(this.posts, this.delPost[i]);
+    }
+    let str = JSON.stringify(this.posts);
+    this.storage.set('myImgs', str);
+  }
+    
+  cancel() {
+    this.isDelete = false;
+    this.delPost= [];
+    this.mycards.forEach(e => {
+      e.nativeElement.style.opacity=1.0;
+    });
+  }
+/**
+ * 
+ * 
+ * 
+ */
+  removeByValue(arr, val) {
+    for (var i = 0; i < arr.length; i++) {
+      if (arr[i] == val) {
+        arr.splice(i, 1);
+        break;
+      }
+    }
+  }
+/**
+ * 删除照片时，点击card会改变card的className
+ * @param div 
+ * @param post 
+ */
+  toogleClass(div, post) {
+    if(this.isDelete){
+      if (div.style.opacity == 0.4) {
+        div.style.opacity = 1.0;
+        this.removeByValue(this.delPost, post);
+      } else {
+        div.style.opacity = 0.4;
+        this.delPost.push(post);
+      }
+    }
   }
 }

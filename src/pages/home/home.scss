@@ -1,6 +1,13 @@
 page-home {
-  .pins {
+  .pins1 {
     column-count: 1;
+  }
+  .pins2 {
+    column-count: 2;
+  }
+  .del_div {
+    opacity: 0.4;
+    display: inline-block;
   }
   .pin {
     display: inline-block;
@@ -16,7 +23,6 @@ page-home {
     height: 9vw;
   }
   .time {
-      
     p:last-child {
       font-weight: bold;
       font-size: 25px;
@@ -28,7 +34,7 @@ page-home {
   } // Media queries
   @media (min-width: 480px) {
     .pins {
-      column-count: 1;
+      column-count: 4;
     }
     .item ion-avatar img {
       width: 7vw !important;
@@ -37,7 +43,7 @@ page-home {
   }
   @media (min-width: 640px) {
     .pins {
-      column-count: 1;
+      column-count: 4;
     }
     .item ion-avatar img {
       width: 5vw !important;

@@ -4,10 +4,20 @@
       <ion-icon name="menu"></ion-icon>
     </button>
     <ion-title>我的图片</ion-title>
-    <ion-buttons end > 
-      <button icon-only ion-button (click)="add_img()" >
+    <ion-buttons end>
+      <button *ngIf="!isDelete" icon-only ion-button (click)="add_img()">
+
         <ion-icon name='add'></ion-icon>
       </button>
+      <button icon-only ion-button (click)="del_img()">
+
+        <ion-icon [name]="isDelete?'trash':'images'"></ion-icon>
+      </button>
+      <button *ngIf="isDelete" icon-only ion-button (click)="cancel()">
+        <ion-icon name='image'></ion-icon>
+      </button>
+
+
     </ion-buttons>
 
   </ion-navbar>
@@ -15,8 +25,9 @@
 
 <ion-content padding>
   <div>{{mytext}}</div>
-  <div class="pins">
-    <ion-card class="pin" *ngFor="let post of posts;index">
+  <div [ngClass]="isDelete?'pins2':'pins1'">
+    <ion-card #mycard  class="pin" *ngFor="let post of posts;" (click)="toogleClass(mycard,post);$event.stopPropagation()">
+
       <img tappable (click)='change_image(post)' [src]="post.image" />
       <div tappable *ngIf="post.description" class="post-description" (click)='changeDescription(post,index)'>
         <small>{{ post.description }}</small>
@@ -31,11 +42,11 @@
             <p>
               <small>Saicoding</small>
             </p>
-        </ion-col>
-        <ion-col col-4 class='time' align-self-center>
-          <p>{{post.time | date:'yyyy-MM-dd'}}</p>
-          <p>{{post.time | date:'HH:mm'}}</p>
-        </ion-col>
+          </ion-col>
+          <ion-col col-4 class='time' align-self-center>
+            <p>{{post.time | date:'yyyy-MM-dd'}}</p>
+            <p>{{post.time | date:'HH:mm'}}</p>
+          </ion-col>
         </ion-row>
       </ion-item>
     </ion-card>
