@@ -1,4 +1,4 @@
-import { Component, Input, ViewChildren, ElementRef, QueryList, Renderer2} from '@angular/core';
+import { Component, Input, ViewChildren, ElementRef, QueryList, Renderer2 } from '@angular/core';
 import { IonicPage, NavController, Platform, ActionSheetController, LoadingController, AlertController, } from 'ionic-angular';
 
 import { Storage } from '@ionic/storage';
@@ -33,6 +33,9 @@ export class HomePage {
   ) {
     console.log('ok')
   }
+  /**
+   * 载入
+   */
 
   ionViewDidLoad() {
     this.storage.get('myImgs').then((val) => {
@@ -105,9 +108,97 @@ export class HomePage {
     })
   }
 
+  /**
+   * 事件
+   */
+
+  //添加图片
   add_img() {
     this.creat_actionsheet(this.add_handler);
   }
+  //修改描述
+  changeDescription(post, index) {
+    if (!this.isDelete) {
+      let alert = this.alertCtrl.create({
+        title: '修改描述',
+        message: "请填写照片描述",
+        inputs: [
+          {
+            name: 'title',
+            placeholder: post.description
+          },
+        ],
+        buttons: [
+          {
+            text: '取消',
+            handler: data => {
+
+            }
+          },
+          {
+            text: '保存',
+            handler: data => {
+              post.description = data.title;
+              let str = JSON.stringify(this.posts);
+              this.storage.set('myImgs', str);
+            }
+          }
+        ]
+      });
+      alert.present();
+
+    }
+  }
+  //修改图片
+  change_image(post) {
+    if (!this.isDelete) {
+      this.creat_actionsheet(this.change_handler, post);
+    }
+
+  }
+  //删除图片
+  del_img() {
+    this.isDelete = true;
+    for (let i = 0; i < this.delPost.length; i++) {
+      this.removeByValue(this.posts, this.delPost[i]);
+    }
+    let str = JSON.stringify(this.posts);
+    this.storage.set('myImgs', str);
+  }
+  //从删除界面回到图片浏览界面  
+  cancel() {
+    this.isDelete = false;
+    this.delPost = [];
+    this.mycards.forEach(e => {
+      e.nativeElement.style.opacity = 1.0;
+    });
+  }
+  //变换删除状态
+  toogleClass(mycard, post) {
+    if (this.isDelete) {
+      if (this.platform.is('android')) {
+        if (mycard.className == 'pin card card-md') {
+          mycard.setAttribute('class', 'pin card card-md animated infinite pulse')
+          this.delPost.push(post);
+        } else {
+          mycard.setAttribute('class', 'pin card card-md')
+          this.removeByValue(this.delPost, post);
+        }
+      } else if (this.platform.is('ios')) {
+        if (mycard.className == 'pin card card-ios') {
+          mycard.setAttribute('class', 'pin card card-ios animated infinite pulse')
+          this.delPost.push(post);
+        } else {
+          mycard.setAttribute('class', 'pin card card-ios')
+          this.removeByValue(this.delPost, post);
+        }
+      }
+    }
+  }
+
+  /**
+   * 回调函数
+   */
 
   add_handler = (from) => {
     const loading = this.loadingCtrl.create();
@@ -119,6 +210,55 @@ export class HomePage {
     });
   }
 
+  change_handler = (from, post) => {
+    const loading = this.loadingCtrl.create();
+
+    loading.present();
+    return from.then(picture => {
+
+      post.image = picture;
+      let str = JSON.stringify(this.posts);
+      this.storage.set('myImgs', str);
+      loading.dismiss();
+    });
+  }
+
+  /**
+   * 共用
+   */
+  creat_actionsheet(handler, post?) {
+    const actionsheet = this.actionsheetCtrl.create({
+      title: '选择图片',
+      buttons: [
+        {
+          text: '照相',
+          icon: !this.platform.is('ios') ? 'camera' : null,
+          handler: () => {
+            handler(this.camera.getPictureFromCamera(), post);
+          }
+        },
+        {
+          text: !this.platform.is('ios') ? '相片库' : 'camera roll',
+          icon: !this.platform.is('ios') ? 'image' : null,
+          handler: () => {
+            handler(this.camera.getPictureFromPhotoLibrary(), post);
+          }
+        },
+        {
+          text: '取消',
+          icon: !this.platform.is('ios') ? '关闭' : null,
+          role: 'destructive',
+          handler: () => {
+            console.log('the user has cancelled the interaction.');
+          }
+        }
+      ]
+    });
+    return actionsheet.present();
+  }
+  /**
+   * 弹窗
+   */
   showAlert(pic) {
     if (pic) {
 
@@ -160,142 +300,6 @@ export class HomePage {
       return
     }
   }
-
-  changeDescription(post, index) {
-    if (!this.isDelete) {
-      let alert = this.alertCtrl.create({
-        title: '修改描述',
-        message: "请填写照片描述",
-        inputs: [
-          {
-            name: 'title',
-            placeholder: post.description
-          },
-        ],
-        buttons: [
-          {
-            text: '取消',
-            handler: data => {
-
-            }
-          },
-          {
-            text: '保存',
-            handler: data => {
-              post.description = data.title;
-              let str = JSON.stringify(this.posts);
-              this.storage.set('myImgs', str);
-            }
-          }
-        ]
-      });
-      alert.present();
-
-    }
-  }
-  creat_actionsheet(handler, post?) {
-    const actionsheet = this.actionsheetCtrl.create({
-      title: '选择图片',
-      buttons: [
-        {
-          text: '照相',
-          icon: !this.platform.is('ios') ? 'camera' : null,
-          handler: () => {
-            handler(this.camera.getPictureFromCamera(), post);
-          }
-        },
-        {
-          text: !this.platform.is('ios') ? '相片库' : 'camera roll',
-          icon: !this.platform.is('ios') ? 'image' : null,
-          handler: () => {
-            handler(this.camera.getPictureFromPhotoLibrary(), post);
-          }
-        },
-        {
-          text: '取消',
-          icon: !this.platform.is('ios') ? '关闭' : null,
-          role: 'destructive',
-          handler: () => {
-            console.log('the user has cancelled the interaction.');
-          }
-        }
-      ]
-    });
-    return actionsheet.present();
-  }
-
-  /**
-   * 防止不识别this 所以采用箭头函数
-   */
-
-  change_handler = (from, post) => {
-    const loading = this.loadingCtrl.create();
-
-    loading.present();
-    return from.then(picture => {
-
-      post.image = picture;
-      let str = JSON.stringify(this.posts);
-      this.storage.set('myImgs', str);
-      loading.dismiss();
-    });
-  }
-
-  change_image(post) {
-    if (!this.isDelete) {
-      this.creat_actionsheet(this.change_handler, post);
-    }
-
-  }
-
-  del_img() {
-    this.isDelete = true;
-    for (let i = 0; i < this.delPost.length; i++) {
-      this.removeByValue(this.posts, this.delPost[i]);
-    }
-    let str = JSON.stringify(this.posts);
-    this.storage.set('myImgs', str);
-  }
-
-  cancel() {
-    this.isDelete = false;
-    this.delPost = [];
-    this.mycards.forEach(e => {
-      e.nativeElement.style.opacity = 1.0;
-    });
-  }
-
-  removeByValue(arr, val) {
-    for (var i = 0; i < arr.length; i++) {
-      if (arr[i] == val) {
-        arr.splice(i, 1);
-        break;
-      }
-    }
-  }
-
-  toogleClass(mycard, post) {
-    if (this.isDelete) {
-      if (this.platform.is('android')){
-        if (mycard.className == 'pin card card-md') {
-          mycard.setAttribute('class', 'pin card card-md animated infinite pulse')         
-          this.delPost.push(post);   
-        } else {
-          mycard.setAttribute('class', 'pin card card-md')
-          this.removeByValue(this.delPost, post);
-        }
-      }else if(this.platform.is('ios')){
-        if (mycard.className == 'pin card card-ios') {
-          mycard.setAttribute('class', 'pin card card-ios animated infinite pulse')
-          this.delPost.push(post);
-        } else {
-          mycard.setAttribute('class', 'pin card card-ios')
-          this.removeByValue(this.delPost, post);
-        }       
-      }
-    }
-  }
-
   hold_del(post) {
     let alert = this.alertCtrl.create({
       message: "是否删除",
@@ -318,4 +322,14 @@ export class HomePage {
     });
     alert.present();
   }
+  // 从数组中删除指定元素
+  removeByValue(arr, val) {
+    for (var i = 0; i < arr.length; i++) {
+      if (arr[i] == val) {
+        arr.splice(i, 1);
+        break;
+      }
+    }
+  }
+
 }
