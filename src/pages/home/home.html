@@ -6,33 +6,26 @@
     <ion-title>我的图片</ion-title>
     <ion-buttons end>
       <button *ngIf="!isDelete" icon-only ion-button (click)="add_img()">
-
         <ion-icon name='add'></ion-icon>
       </button>
       <button icon-only ion-button (click)="del_img()">
-
         <ion-icon [name]="isDelete?'trash':'images'"></ion-icon>
       </button>
       <button *ngIf="isDelete" icon-only ion-button (click)="cancel()">
         <ion-icon name='image'></ion-icon>
       </button>
-
-
     </ion-buttons>
-
   </ion-navbar>
 </ion-header>
 
 <ion-content padding>
-  <div>{{mytext}}</div>
   <div [ngClass]="isDelete?'pins2':'pins1'">
-    <ion-card #mycard  class="pin" *ngFor="let post of posts;" (click)="toogleClass(mycard,post);$event.stopPropagation()">
-
+    <ion-card #mycard class='pin' *ngFor="let post of posts;let id=index" (click)="toogleClass(mycard,post);">
       <img tappable (click)='change_image(post)' [src]="post.image" />
-      <div tappable *ngIf="post.description" class="post-description" (click)='changeDescription(post,index)'>
+      <div tappable *ngIf="post.description " class="post-description" (click)='changeDescription(post,index)'>
         <small>{{ post.description }}</small>
       </div>
-      <ion-item>
+      <ion-item *ngIf="post.description && !isDelete" (click)='hold_del(post)'>
         <ion-row>
           <ion-col col-8>
             <ion-avatar item-start>
@@ -51,4 +44,7 @@
       </ion-item>
     </ion-card>
   </div>
+<div>{{mytext}}</div>
+<div>{{mytext1}}</div>
+<div>{{mytext2}}</div>
 </ion-content>

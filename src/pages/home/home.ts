@@ -1,4 +1,4 @@
-import { Component, Input, ViewChildren, ElementRef, QueryList } from '@angular/core';
+import { Component, Input, ViewChildren, ElementRef, QueryList, Renderer2} from '@angular/core';
 import { IonicPage, NavController, Platform, ActionSheetController, LoadingController, AlertController, } from 'ionic-angular';
 
 import { Storage } from '@ionic/storage';
@@ -10,10 +10,14 @@ import { CameraProvider } from '../../providers/util/camera.provider';
   templateUrl: 'home.html'
 })
 export class HomePage {
-  mytext: string;
+  mytext: any;
+  mytext1: any;
+  mytext2: any;
   posts = [];
   isDelete: boolean = false;
   delPost = [];
+  time: number = 0;
+  interval: number;
 
   @ViewChildren('mycard')
   mycards: QueryList<ElementRef>;
@@ -32,62 +36,62 @@ export class HomePage {
 
   ionViewDidLoad() {
     this.storage.get('myImgs').then((val) => {
-      if (val) {
+      if (this.mytext == val) {
         this.posts = JSON.parse(val);
       } else {
         let imgs = [
           {
-            description: 'Trying out digital painting',
+            description: '1Trying out digital painting',
             image: './assets/imgs/b.jpg',
             time: new Date()
           },
           {
-            description: 'Delicious chocolate bread recipe!',
+            description: '2Delicious chocolate bread recipe!',
             image: './assets/imgs/c.jpg',
             time: new Date()
           },
           {
-            description: 'Look at this amazing clay humming bird I crafted!',
+            description: '3Look at this amazing clay humming bird I crafted!',
             image: './assets/imgs/d.jpg',
             time: new Date()
           },
           {
-            description: 'Origami tullip tutorial',
+            description: '4Origami tullip tutorial',
             image: './assets/imgs/e.jpg',
             time: new Date()
           },
           {
-            description: 'Delicious chocolate bread recipe!',
+            description: '5Delicious chocolate bread recipe!',
             image: './assets/imgs/f.jpg',
             time: new Date()
           },
           {
-            description: 'Delicious chocolate bread recipe!',
+            description: '6Delicious chocolate bread recipe!',
             image: './assets/imgs/g.jpg',
             time: new Date()
           },
           {
-            description: 'Delicious chocolate bread recipe!',
+            description: '7Delicious chocolate bread recipe!',
             image: './assets/imgs/h.jpg',
             time: new Date()
           },
           {
-            description: 'Delicious chocolate bread recipe!',
+            description: '8Delicious chocolate bread recipe!',
             image: './assets/imgs/i.jpg',
             time: new Date()
           },
           {
-            description: 'Delicious chocolate bread recipe!',
+            description: '9Delicious chocolate bread recipe!',
             image: './assets/imgs/j.jpg',
             time: new Date()
           },
           {
-            description: 'Delicious chocolate bread recipe!',
+            description: '10Delicious chocolate bread recipe!',
             image: './assets/imgs/k.jpg',
             time: new Date()
           },
           {
-            description: 'Fastest car of all times',
+            description: '11Fastest car of all times',
             image: './assets/imgs/l.jpg',
             time: new Date()
           },
@@ -246,25 +250,21 @@ export class HomePage {
 
   del_img() {
     this.isDelete = true;
-    for (let i = 0; i < this.delPost.length; i++){
+    for (let i = 0; i < this.delPost.length; i++) {
       this.removeByValue(this.posts, this.delPost[i]);
     }
     let str = JSON.stringify(this.posts);
     this.storage.set('myImgs', str);
   }
-    
+
   cancel() {
     this.isDelete = false;
-    this.delPost= [];
+    this.delPost = [];
     this.mycards.forEach(e => {
-      e.nativeElement.style.opacity=1.0;
+      e.nativeElement.style.opacity = 1.0;
     });
   }
-/**
- * 
- * 
- * 
- */
+
   removeByValue(arr, val) {
     for (var i = 0; i < arr.length; i++) {
       if (arr[i] == val) {
@@ -273,20 +273,49 @@ export class HomePage {
       }
     }
   }
-/**
- * 删除照片时，点击card会改变card的className
- * @param div 
- * @param post 
- */
-  toogleClass(div, post) {
-    if(this.isDelete){
-      if (div.style.opacity == 0.4) {
-        div.style.opacity = 1.0;
-        this.removeByValue(this.delPost, post);
-      } else {
-        div.style.opacity = 0.4;
-        this.delPost.push(post);
+
+  toogleClass(mycard, post) {
+    if (this.isDelete) {
+      if (this.platform.is('android')){
+        if (mycard.className == 'pin card card-md') {
+          mycard.setAttribute('class', 'pin card card-md animated infinite pulse')         
+          this.delPost.push(post);   
+        } else {
+          mycard.setAttribute('class', 'pin card card-md')
+          this.removeByValue(this.delPost, post);
+        }
+      }else if(this.platform.is('ios')){
+        if (mycard.className == 'pin card card-ios') {
+          mycard.setAttribute('class', 'pin card card-ios animated infinite pulse')
+          this.delPost.push(post);
+        } else {
+          mycard.setAttribute('class', 'pin card card-ios')
+          this.removeByValue(this.delPost, post);
+        }       
       }
     }
+  }
+
+  hold_del(post) {
+    let alert = this.alertCtrl.create({
+      message: "是否删除",
+      buttons: [
+        {
+          text: '取消',
+          handler: data => {
+
+          }
+        },
+        {
+          text: '删除',
+          handler: data => {
+            this.removeByValue(this.posts, post);
+            let str = JSON.stringify(this.posts);
+            this.storage.set('myImgs', str);
+          }
+        }
+      ]
+    });
+    alert.present();
   }
 }
